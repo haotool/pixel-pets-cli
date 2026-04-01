@@ -49,6 +49,8 @@ test("CLI multi-pull reveals every pet and stores the full batch", () => {
   assert.match(output, /Reveal 1\/3/);
   assert.match(output, /Reveal 2\/3/);
   assert.match(output, /Reveal 3\/3/);
+  assert.match(output, /ATTRIBUTES/);
+  assert.match(output, /SPRITE/);
   assert.match(output, /Summon Summary \(3 pets\)/);
 
   const storagePath = path.join(tempHome, ".pixel-pets", "collection.json");

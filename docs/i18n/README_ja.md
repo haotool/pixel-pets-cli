@@ -29,7 +29,7 @@ npx pixel-pets-cli pull -n 10
 # 固定 seed の 50 連召喚。同じ結果を再現可能
 npx pixel-pets-cli pull gallery-seed -n 50
 
-# 100 連召喚でも全て個別に表示
+# 100 連召喚でも全て完全カード付きで表示
 npx pixel-pets-cli pull -n 100
 ```
 
@@ -81,7 +81,7 @@ ppets pull
 
 - すべての召喚は公開された確率に従い、ティア指定や追い召喚は行いません。
 - `pull -n <count>` は集計だけで終わらず、各ペットを順番に reveal します。
-- 少数バッチでは詳細カード、大きなバッチでは高速な gallery reveal を使いますが、全件表示は維持します。
+- 各 reveal では詳細カード、属性、スプライト、trait まで完全表示します。
 - TTY ではリッチな演出、非対話環境では読みやすいテキスト出力に自動で切り替わります。
 
 ---

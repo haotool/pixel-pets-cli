@@ -29,7 +29,7 @@ npx pixel-pets-cli pull -n 10
 # 고정 seed 기반 50연 소환, 동일 결과 재현 가능
 npx pixel-pets-cli pull gallery-seed -n 50
 
-# 100연 소환도 전부 개별 표시
+# 100연 소환도 전부 완전 카드와 함께 표시
 npx pixel-pets-cli pull -n 100
 ```
 
@@ -81,7 +81,7 @@ ppets pull
 
 - 모든 소환은 공개된 확률만 따르며, 특정 티어 지정이나 추격 소환은 없습니다.
 - `pull -n <count>` 는 요약만 출력하지 않고 각 펫을 순차적으로 reveal 합니다.
-- 소규모 배치는 상세 카드, 대규모 배치는 빠른 gallery reveal 을 사용하지만 전부 표시합니다.
+- 각 reveal 은 상세 카드, 속성, 스프라이트, trait 까지 모두 표시합니다.
 - TTY 환경에서는 풍부한 애니메이션, 비대화형 환경에서는 읽기 쉬운 텍스트 출력으로 자동 전환됩니다.
 
 ---

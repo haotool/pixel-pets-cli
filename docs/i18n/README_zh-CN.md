@@ -29,7 +29,7 @@ npx pixel-pets-cli pull -n 10
 # 使用固定 seed 的 50 连抽，可复现相同序列
 npx pixel-pets-cli pull gallery-seed -n 50
 
-# 100 连抽，仍会逐只显示
+# 100 连抽，仍会逐只显示完整卡片
 npx pixel-pets-cli pull -n 100
 ```
 
@@ -81,7 +81,7 @@ ppets pull
 
 - 所有召唤都保持纯概率，不支持指定阶层保底或追阶。
 - `pull -n <count>` 会对每一只宠物进行独立揭示，而不只是显示汇总。
-- 小批次显示完整卡片，大批次使用更快的 gallery reveal，但仍逐只展示。
+- 每一次 reveal 都会显示完整卡片、属性、精灵图与 trait。
 - 非交互式输出环境会自动降级为可读文本输出。
 
 ---

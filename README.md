@@ -27,7 +27,7 @@ npx pixel-pets-cli pull -n 10
 # Summon 50 pets with a repeatable seed sequence
 npx pixel-pets-cli pull gallery-seed -n 50
 
-# Summon 100 pets with fast staged reveals
+# Summon 100 pets with full per-pet reveals
 npx pixel-pets-cli pull -n 100
 ```
 
@@ -52,7 +52,7 @@ ppets pull           # Short alias
 | Command | Description |
 |---------|-------------|
 | `pull [seed]` | Summon a new pet |
-| `pull -n <count>` | Summon multiple pets with staged reveals |
+| `pull -n <count>` | Summon multiple pets with full animated reveals |
 | `pull <seed> -n <count>` | Run a repeatable multi-summon sequence |
 | `list` | Show your pet collection |
 | `show <name>` | Display detailed pet card |
@@ -114,7 +114,7 @@ ppets pull           # Short alias
 - **6 Attributes** - Vitality, Agility, Spirit, Luck, Charm, Focus
 - **Probability-First Summons** - No tier targeting, every pull stays true to the published odds
 - **Gallery-Style Multi Pulls** - Each pet is revealed with its own staged transition
-- **Adaptive Detail Levels** - Small batches show full cards, large batches switch to compact reveal cards
+- **Full Per-Pet Presentation** - Multi-summons use the same complete interface as single pulls
 - **TTY-Aware Rendering** - Rich animation in terminals and readable fallback output in non-interactive environments
 - **Local Storage** - Your collection persists between sessions
 

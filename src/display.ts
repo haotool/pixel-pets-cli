@@ -36,11 +36,10 @@ const REEL_FRAMES = [
   "[.........]",
 ];
 
-type CardMode = "full" | "compact";
-
 export interface BatchRevealConfig {
-  cardMode: CardMode;
   frameDelay: number;
+  portalDelay: number;
+  reelDelay: number;
 }
 
 function isInteractiveTerminal(): boolean {
@@ -93,14 +92,14 @@ function formatAttribute(name: Attribute, value: number): string {
 
 function getBatchRevealConfig(count: number): BatchRevealConfig {
   if (count <= 8) {
-    return { cardMode: "full", frameDelay: 70 };
+    return { frameDelay: 70, portalDelay: 90, reelDelay: 70 };
   }
 
   if (count <= 24) {
-    return { cardMode: "compact", frameDelay: 45 };
+    return { frameDelay: 45, portalDelay: 60, reelDelay: 45 };
   }
 
-  return { cardMode: "compact", frameDelay: 22 };
+  return { frameDelay: 22, portalDelay: 34, reelDelay: 26 };
 }
 
 function renderProgressBar(current: number, total: number, width = 18): string {
@@ -114,7 +113,7 @@ function getBestTier(pets: PixelPet[]): Tier {
   , pets[0]!.tier);
 }
 
-export function displayPetCard(pet: PixelPet, mode: CardMode = "full"): void {
+export function displayPetCard(pet: PixelPet): void {
   const color = TIER_COLORS[pet.tier];
   const probability = getTierProbability(pet.tier).toFixed(1);
   const innerWidth = getCardInnerWidth();
@@ -137,11 +136,6 @@ export function displayPetCard(pet: PixelPet, mode: CardMode = "full"): void {
     innerWidth,
     chalk.white(`  Expression: ${pet.expression}  Accessory: ${pet.accessory}`)
   ));
-
-  if (mode === "compact") {
-    console.log(border);
-    return console.log();
-  }
 
   console.log(border);
   console.log(renderCardRow(color, innerWidth, chalk.bold.white("  ATTRIBUTES")));
@@ -168,8 +162,6 @@ export function displayPetCard(pet: PixelPet, mode: CardMode = "full"): void {
 }
 
 export async function displaySingleSummonAnimation(pet: PixelPet): Promise<void> {
-  const color = TIER_COLORS[pet.tier];
-
   if (!isInteractiveTerminal()) {
     console.log(chalk.cyan("\n  Summoning pet...\n"));
     return;
@@ -189,21 +181,7 @@ export async function displaySingleSummonAnimation(pet: PixelPet): Promise<void>
   await sleep(420);
   spinner.stop();
 
-  process.stdout.write("\n");
-  for (const frame of PORTAL_FRAMES) {
-    process.stdout.write(`\r  ${chalk.yellow(frame)}`);
-    await sleep(90);
-  }
-
-  process.stdout.write("\n");
-  for (const frame of REEL_FRAMES) {
-    process.stdout.write(`\r  ${chalk.white(frame)}`);
-    await sleep(70);
-  }
-
-  process.stdout.write(`\r  ${color(">>>")} ${color.bold(` ${pet.tier.toUpperCase()} `)} ${color("<<<")}`);
-  await sleep(240);
-  console.log("\n");
+  await playRevealSequence(pet, { portalDelay: 90, reelDelay: 70 });
 }
 
 export async function displayBatchSummonAnimation(count: number): Promise<BatchRevealConfig> {
@@ -242,20 +220,9 @@ export async function displayBatchPetReveal(
   config: BatchRevealConfig
 ): Promise<void> {
   const label = `${(index + 1).toString().padStart(String(total).length, "0")}/${total}`;
-  const color = TIER_COLORS[pet.tier];
-
-  if (isInteractiveTerminal()) {
-    for (const frame of REEL_FRAMES) {
-      process.stdout.write(
-        `\r  ${chalk.gray(`Reveal ${label}`)} ${chalk.white(frame)} ${color(TIER_SYMBOLS[pet.tier])}`
-      );
-      await sleep(config.frameDelay);
-    }
-    process.stdout.write("\r\x1B[2K");
-  }
-
   console.log(chalk.bold(`  Reveal ${label}`));
-  displayPetCard(pet, config.cardMode);
+  await playRevealSequence(pet, config);
+  displayPetCard(pet);
 }
 
 export function displaySummonSummary(pets: PixelPet[], bestPet: PixelPet): void {
@@ -288,7 +255,7 @@ export function displaySummonSummary(pets: PixelPet[], bestPet: PixelPet): void 
   console.log(`  Sparkle Pets: ${chalk.bold(sparkleCount.toString())}`);
   console.log();
   console.log(chalk.bold("  Featured Pull"));
-  displayPetCard(bestPet, "compact");
+  displayPetCard(bestPet);
 }
 
 export function displayPetList(pets: PixelPet[]): void {
@@ -441,4 +408,27 @@ export function displayBanner(): void {
 
 function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+async function playRevealSequence(
+  pet: PixelPet,
+  config: Pick<BatchRevealConfig, "portalDelay" | "reelDelay">
+): Promise<void> {
+  const color = TIER_COLORS[pet.tier];
+
+  process.stdout.write("\n");
+  for (const frame of PORTAL_FRAMES) {
+    process.stdout.write(`\r  ${chalk.yellow(frame)}`);
+    await sleep(config.portalDelay);
+  }
+
+  process.stdout.write("\n");
+  for (const frame of REEL_FRAMES) {
+    process.stdout.write(`\r  ${chalk.white(frame)} ${color(TIER_SYMBOLS[pet.tier])}`);
+    await sleep(config.reelDelay);
+  }
+
+  process.stdout.write(`\r  ${color(">>>")} ${color.bold(` ${pet.tier.toUpperCase()} `)} ${color("<<<")}`);
+  await sleep(Math.max(160, config.reelDelay * 3));
+  console.log("\n");
 }
