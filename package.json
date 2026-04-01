@@ -1,0 +1,40 @@
+{
+  "name": "pixel-pets-cli",
+  "version": "1.0.0",
+  "description": "Terminal pet collection game - summon and collect pixel companions. An original implementation.",
+  "type": "module",
+  "main": "dist/index.js",
+  "bin": {
+    "pixel-pets": "dist/index.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsx src/index.ts",
+    "start": "node dist/index.js"
+  },
+  "keywords": [
+    "cli",
+    "terminal",
+    "game",
+    "pet",
+    "collection",
+    "ascii-art",
+    "original"
+  ],
+  "author": "haotool",
+  "license": "MIT",
+  "dependencies": {
+    "chalk": "^5.3.0",
+    "commander": "^12.0.0",
+    "figlet": "^1.7.0"
+  },
+  "devDependencies": {
+    "@types/figlet": "^1.5.8",
+    "@types/node": "^20.11.0",
+    "tsx": "^4.7.0",
+    "typescript": "^5.3.3"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
