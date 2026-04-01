@@ -324,17 +324,21 @@ export async function displayAnimatedSprite(
   pet: PixelPet,
   duration = 3000
 ): Promise<void> {
+  const initialSprite = renderSprite(pet, 0);
   const frameCount = getFrameCount(pet.species);
   const startTime = Date.now();
   let frame = 0;
 
   console.log();
+  for (const line of initialSprite) {
+    console.log(TIER_COLORS[pet.tier](`  ${line}`));
+  }
 
   while (Date.now() - startTime < duration) {
     const sprite = renderSprite(pet, frame);
     const color = TIER_COLORS[pet.tier];
 
-    process.stdout.write("\x1B[4A");
+    process.stdout.write(`\x1B[${sprite.length}A`);
 
     for (const line of sprite) {
       const sparkle = pet.sparkle
@@ -352,6 +356,8 @@ export async function displayAnimatedSprite(
 
 /** Display help */
 export function displayHelp(cliName = "pixel-pets-cli"): void {
+  const directName = cliName === "pixel-pets-cli" ? "pixel-pets" : cliName;
+
   console.log(`
   ${chalk.bold("Pixel Pets CLI")} - Terminal Pet Collection Game
 
@@ -378,13 +384,13 @@ export function displayHelp(cliName = "pixel-pets-cli"): void {
 
   ${chalk.bold("Examples:")}
     ${chalk.gray("# Summon 10 pets")}
-    ${cliName} pull -n 10
+    ${directName} pull -n 10
 
     ${chalk.gray("# Summon until getting a gold or higher")}
-    ${cliName} pull -u g
+    ${directName} pull -u g
 
     ${chalk.gray("# Summon up to 50 times or until diamond")}
-    ${cliName} pull -n 50 -u d
+    ${directName} pull -n 50 -u d
 `);
 }
 

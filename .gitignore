@@ -34,6 +34,7 @@ coverage/
 # Cache
 .cache/
 *.tsbuildinfo
+*.tgz
 
 # Local storage (user data)
 # Note: ~/.pet-gacha/ is stored in user home, not in project

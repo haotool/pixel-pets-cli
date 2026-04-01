@@ -98,15 +98,9 @@ export function renderSprite(core: CreatureCore, frame = 0): string[] {
   const body = frames[frame % frames.length]!.map((line) =>
     line.replaceAll("{E}", core.expression)
   );
-
-  const lines = [...body];
-
-  // Add accessory to first line if applicable
-  if (core.accessory !== "none" && !lines[0]!.trim()) {
-    lines[0] = ACCESSORY_LINES[core.accessory];
-  }
-
-  return lines;
+  return core.accessory === "none"
+    ? body
+    : [ACCESSORY_LINES[core.accessory], ...body];
 }
 
 /** Get frame count for species */
