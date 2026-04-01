@@ -1,12 +1,13 @@
 /**
  * Pixel Pets CLI - Display Functions
  * 
- * Terminal output and animations.
+ * Terminal output, animations, and gacha effects.
  */
 
 import chalk from "chalk";
+import ora from "ora";
 import type { Attribute, PixelPet, Tier } from "./types.js";
-import { ATTRIBUTES, TIER_SYMBOLS } from "./types.js";
+import { ATTRIBUTES, TIER_SYMBOLS, TIERS } from "./types.js";
 import {
   renderSprite,
   renderFace,
@@ -25,6 +26,32 @@ const TIER_COLORS: Record<Tier, typeof chalk> = {
   mythic: chalk.hex("#FF00FF"),
 };
 
+/** Tier index for comparison */
+const TIER_INDEX: Record<Tier, number> = {
+  bronze: 0,
+  silver: 1,
+  gold: 2,
+  platinum: 3,
+  diamond: 4,
+  mythic: 5,
+};
+
+/** Check if tier meets target */
+export function tierMeetsTarget(tier: Tier, target: Tier): boolean {
+  return TIER_INDEX[tier] >= TIER_INDEX[target];
+}
+
+/** Parse tier from string */
+export function parseTier(input: string): Tier | null {
+  const lower = input.toLowerCase();
+  for (const tier of TIERS) {
+    if (tier === lower || tier[0] === lower) {
+      return tier;
+    }
+  }
+  return null;
+}
+
 /** Render attribute bar */
 function renderBar(value: number, width = 12): string {
   const filled = Math.round((value / 100) * width);
@@ -39,7 +66,7 @@ function formatAttribute(name: Attribute, value: number): string {
 }
 
 /** Display pet card */
-export function displayPetCard(pet: PixelPet): void {
+export function displayPetCard(pet: PixelPet, compact = false): void {
   const color = TIER_COLORS[pet.tier];
   const symbol = TIER_SYMBOLS[pet.tier];
   const prob = getTierProbability(pet.tier).toFixed(1);
@@ -63,49 +90,61 @@ export function displayPetCard(pet: PixelPet): void {
       chalk.white(`  Species: ${pet.species.padEnd(12)} Face: ${face}`.padEnd(W)) +
       color("|")
   );
-  console.log(
-    color("|") +
-      chalk.white(`  Expression: ${pet.expression}  Accessory: ${pet.accessory}`.padEnd(W)) +
-      color("|")
-  );
 
-  console.log(color("+" + "-".repeat(W) + "+"));
-  console.log(color("|") + chalk.bold.white("  ATTRIBUTES".padEnd(W)) + color("|"));
-
-  for (const attr of ATTRIBUTES) {
-    const line = formatAttribute(attr, pet.attributes[attr]);
-    console.log(color("|") + `  ${line}`.padEnd(W) + color("|"));
-  }
-
-  console.log(color("+" + "-".repeat(W) + "+"));
-  console.log(color("|") + chalk.bold.white("  SPRITE".padEnd(W)) + color("|"));
-
-  const sprite = renderSprite(pet, 0);
-  for (const line of sprite) {
-    const displayLine = pet.sparkle ? `  ${line} *` : `  ${line}`;
-    console.log(color("|") + displayLine.padEnd(W) + color("|"));
-  }
-
-  console.log(color("+" + "-".repeat(W) + "+"));
-
-  const traitLines = wrapText(pet.trait, W - 6);
-  console.log(
-    color("|") + chalk.gray(`  "${traitLines[0]}`.padEnd(W)) + color("|")
-  );
-  for (let i = 1; i < traitLines.length; i++) {
+  if (!compact) {
     console.log(
-      color("|") + chalk.gray(`   ${traitLines[i]}`.padEnd(W)) + color("|")
+      color("|") +
+        chalk.white(`  Expression: ${pet.expression}  Accessory: ${pet.accessory}`.padEnd(W)) +
+        color("|")
     );
-  }
-  if (traitLines.length === 1) {
-    console.log(color("|") + chalk.gray(`  "`.padEnd(W)) + color("|"));
-  } else {
-    const lastIdx = traitLines.length - 1;
-    // Close quote handled in last line
+
+    console.log(color("+" + "-".repeat(W) + "+"));
+    console.log(color("|") + chalk.bold.white("  ATTRIBUTES".padEnd(W)) + color("|"));
+
+    for (const attr of ATTRIBUTES) {
+      const line = formatAttribute(attr, pet.attributes[attr]);
+      console.log(color("|") + `  ${line}`.padEnd(W) + color("|"));
+    }
+
+    console.log(color("+" + "-".repeat(W) + "+"));
+    console.log(color("|") + chalk.bold.white("  SPRITE".padEnd(W)) + color("|"));
+
+    const sprite = renderSprite(pet, 0);
+    for (const line of sprite) {
+      const displayLine = pet.sparkle ? `  ${line} *` : `  ${line}`;
+      console.log(color("|") + displayLine.padEnd(W) + color("|"));
+    }
+
+    console.log(color("+" + "-".repeat(W) + "+"));
+
+    const traitLines = wrapText(pet.trait, W - 6);
+    console.log(
+      color("|") + chalk.gray(`  "${traitLines[0]}`.padEnd(W)) + color("|")
+    );
+    for (let i = 1; i < traitLines.length; i++) {
+      console.log(
+        color("|") + chalk.gray(`   ${traitLines[i]}`.padEnd(W)) + color("|")
+      );
+    }
   }
 
   console.log(color("+" + "-".repeat(W) + "+"));
   console.log();
+}
+
+/** Display compact pet summary */
+export function displayPetSummary(pet: PixelPet, index: number): void {
+  const color = TIER_COLORS[pet.tier];
+  const symbol = TIER_SYMBOLS[pet.tier];
+  const sparkle = pet.sparkle ? chalk.yellow(" *") : "";
+  const face = renderFace(pet);
+  
+  console.log(
+    chalk.gray(`  #${(index + 1).toString().padStart(3)}`) +
+    ` ${color(symbol)} ` +
+    chalk.white(pet.nickname.padEnd(18)) +
+    ` ${face}${sparkle}`
+  );
 }
 
 /** Wrap text to width */
@@ -127,20 +166,132 @@ function wrapText(text: string, maxWidth: number): string[] {
   return lines.length > 0 ? lines : [""];
 }
 
-/** Display gacha animation */
+/** Gacha animation frames */
+const GACHA_FRAMES = [
+  "       ",
+  "   *   ",
+  "  * *  ",
+  " * * * ",
+  "* * * *",
+  " * * * ",
+  "  * *  ",
+  "   *   ",
+];
+
+const REVEAL_FRAMES = [
+  "[      ]",
+  "[*     ]",
+  "[**    ]",
+  "[***   ]",
+  "[****  ]",
+  "[***** ]",
+  "[******]",
+];
+
+/** Display premium gacha animation */
 export async function displayGachaAnimation(tier: Tier): Promise<void> {
   const color = TIER_COLORS[tier];
-  const frames = ["[    ]", "[ .  ]", "[ .. ]", "[... ]", "[....]"];
+  
+  // Phase 1: Charging animation
+  const spinner = ora({
+    text: chalk.cyan("Gathering energy..."),
+    spinner: "dots",
+    color: "cyan",
+  }).start();
 
-  process.stdout.write("\n  Summoning");
+  await sleep(600);
+  spinner.text = chalk.cyan("Channeling power...");
+  await sleep(600);
+  spinner.text = chalk.yellow("Summoning creature...");
+  spinner.color = "yellow";
+  await sleep(600);
+  spinner.stop();
 
-  for (let i = 0; i < 8; i++) {
-    const frame = frames[i % frames.length];
-    process.stdout.write(`\r  Summoning ${color(frame!)}`);
-    await sleep(200);
+  // Phase 2: Sparkle build-up
+  process.stdout.write("\n");
+  for (let i = 0; i < GACHA_FRAMES.length; i++) {
+    process.stdout.write(`\r  ${chalk.yellow(GACHA_FRAMES[i]!)}`);
+    await sleep(100);
   }
 
-  console.log(`\r  Summoning ${color("[DONE]")}\n`);
+  // Phase 3: Reveal animation
+  process.stdout.write("\n\n");
+  for (let i = 0; i < REVEAL_FRAMES.length; i++) {
+    const frame = REVEAL_FRAMES[i]!;
+    const coloredFrame = i < 4 ? chalk.white(frame) : color(frame);
+    process.stdout.write(`\r  ${coloredFrame}`);
+    await sleep(120);
+  }
+
+  // Phase 4: Final reveal with tier color
+  const tierText = ` ${tier.toUpperCase()} `;
+  process.stdout.write(`\r  ${color(">>>")} ${color.bold(tierText)} ${color("<<<")}`);
+  await sleep(300);
+  
+  console.log("\n");
+}
+
+/** Display quick gacha animation for batch pulls */
+export async function displayQuickAnimation(count: number): Promise<void> {
+  const spinner = ora({
+    text: chalk.cyan(`Summoning ${count} creatures...`),
+    spinner: "dots12",
+    color: "cyan",
+  }).start();
+
+  await sleep(400 + count * 50);
+  spinner.succeed(chalk.green(`Summoned ${count} creatures!`));
+}
+
+/** Display batch pull results */
+export function displayBatchResults(
+  pets: PixelPet[],
+  targetTier: Tier | null,
+  found: boolean
+): void {
+  console.log();
+  console.log(chalk.bold(`  Summon Results (${pets.length} total)`));
+  console.log(chalk.gray("  " + "-".repeat(45)));
+
+  // Count by tier
+  const tierCounts: Record<Tier, number> = {
+    bronze: 0, silver: 0, gold: 0, platinum: 0, diamond: 0, mythic: 0,
+  };
+  let sparkleCount = 0;
+
+  for (const pet of pets) {
+    tierCounts[pet.tier]++;
+    if (pet.sparkle) sparkleCount++;
+  }
+
+  // Show tier breakdown
+  for (const tier of TIERS) {
+    if (tierCounts[tier] > 0) {
+      const color = TIER_COLORS[tier];
+      const symbol = TIER_SYMBOLS[tier];
+      const isTarget = tier === targetTier;
+      const marker = isTarget ? chalk.green(" <-- TARGET") : "";
+      console.log(
+        `  ${color(symbol)} ${tier.padEnd(10)} x${tierCounts[tier]}${marker}`
+      );
+    }
+  }
+
+  if (sparkleCount > 0) {
+    console.log(chalk.yellow(`  * Sparkle pets: ${sparkleCount}`));
+  }
+
+  console.log(chalk.gray("  " + "-".repeat(45)));
+
+  if (targetTier) {
+    if (found) {
+      console.log(chalk.green(`  Target ${targetTier.toUpperCase()} reached!`));
+    } else {
+      console.log(chalk.yellow(`  Target ${targetTier.toUpperCase()} not reached.`));
+    }
+  }
+
+  console.log();
 }
 
 /** Display pet list */
@@ -152,9 +303,7 @@ export function displayPetList(pets: PixelPet[]): void {
   }
 
   console.log(chalk.bold(`\n  Collection (${pets.length} pets)\n`));
-  console.log(
-    chalk.gray("  " + "-".repeat(50))
-  );
+  console.log(chalk.gray("  " + "-".repeat(50)));
 
   for (const pet of pets) {
     const color = TIER_COLORS[pet.tier];
@@ -185,7 +334,6 @@ export async function displayAnimatedSprite(
     const sprite = renderSprite(pet, frame);
     const color = TIER_COLORS[pet.tier];
 
-    // Clear previous frame
     process.stdout.write("\x1B[4A");
 
     for (const line of sprite) {
@@ -207,32 +355,45 @@ export function displayHelp(): void {
   console.log(`
   ${chalk.bold("Pixel Pets CLI")} - Terminal Pet Collection Game
 
+  ${chalk.bold("Quick Start:")}
+    ${chalk.cyan("npx pixel-pets-cli")}          Run directly without install
+    ${chalk.cyan("npx pixel-pets-cli pull")}     Summon a pet instantly
+
   ${chalk.bold("Commands:")}
-    pull [seed]      Summon a new pet (optional seed for deterministic result)
-    list             Show your pet collection
-    show <name>      Display detailed pet card
-    animate <name>   Watch pet animation
-    stats            Show collection statistics
-    rates            Display summon rates
-    clear --confirm  Clear all pets
-    help             Show this help
+    pull [seed]              Summon a new pet
+    pull -n <count>          Summon multiple pets
+    pull -u <tier>           Summon until reaching tier (b/s/g/p/d/m)
+    pull -n 100 -u gold      Summon up to 100 or until gold
+    list                     Show your pet collection
+    show <name>              Display detailed pet card
+    animate <name>           Watch pet animation
+    stats                    Show collection statistics
+    rates                    Display summon rates
+    clear --confirm          Clear all pets
+    help                     Show this help
+
+  ${chalk.bold("Tier Shortcuts:")}
+    b = bronze, s = silver, g = gold
+    p = platinum, d = diamond, m = mythic
 
   ${chalk.bold("Examples:")}
-    pixel-pets pull
-    pixel-pets pull my-lucky-seed
-    pixel-pets show "Brave Bounce"
-    pixel-pets rates
+    ${chalk.gray("# Summon 10 pets")}
+    pixel-pets pull -n 10
+
+    ${chalk.gray("# Summon until getting a gold or higher")}
+    pixel-pets pull -u g
+
+    ${chalk.gray("# Summon up to 50 times or until diamond")}
+    pixel-pets pull -n 50 -u d
 `);
 }
 
 /** Display rates */
 export function displayRates(): void {
   console.log(chalk.bold("\n  Summon Rates\n"));
-  console.log(chalk.gray("  " + "-".repeat(40)));
+  console.log(chalk.gray("  " + "-".repeat(45)));
 
-  const tiers: Tier[] = ["bronze", "silver", "gold", "platinum", "diamond", "mythic"];
-
-  for (const tier of tiers) {
+  for (const tier of TIERS) {
     const color = TIER_COLORS[tier];
     const symbol = TIER_SYMBOLS[tier];
     const prob = getTierProbability(tier).toFixed(1).padStart(5);
@@ -243,8 +404,8 @@ export function displayRates(): void {
     );
   }
 
-  console.log(chalk.gray("  " + "-".repeat(40)));
-  console.log(chalk.gray("\n  Note: Sparkle chance varies by tier.\n"));
+  console.log(chalk.gray("  " + "-".repeat(45)));
+  console.log(chalk.gray("\n  Sparkle chance increases with tier.\n"));
 }
 
 /** Display collection stats */
@@ -257,12 +418,7 @@ export function displayStats(pets: PixelPet[]): void {
   }
 
   const tierCounts: Record<Tier, number> = {
-    bronze: 0,
-    silver: 0,
-    gold: 0,
-    platinum: 0,
-    diamond: 0,
-    mythic: 0,
+    bronze: 0, silver: 0, gold: 0, platinum: 0, diamond: 0, mythic: 0,
   };
 
   let sparkleCount = 0;
@@ -277,7 +433,7 @@ export function displayStats(pets: PixelPet[]): void {
   console.log(`  Sparkle Pets: ${chalk.bold(sparkleCount.toString())}`);
   console.log(chalk.gray("  " + "-".repeat(30)));
 
-  for (const tier of Object.keys(tierCounts) as Tier[]) {
+  for (const tier of TIERS) {
     const count = tierCounts[tier];
     if (count > 0) {
       const color = TIER_COLORS[tier];
@@ -291,4 +447,18 @@ export function displayStats(pets: PixelPet[]): void {
 /** Sleep utility */
 function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+/** Display welcome banner */
+export function displayBanner(): void {
+  console.log();
+  console.log(chalk.cyan("  ____  _          _   ____      _       "));
+  console.log(chalk.cyan(" |  _ \\(_)_  _____| | |  _ \\ ___| |_ ___ "));
+  console.log(chalk.cyan(" | |_) | \\ \\/ / _ \\ | | |_) / _ \\ __/ __|"));
+  console.log(chalk.cyan(" |  __/| |>  <  __/ | |  __/  __/ |_\\__ \\"));
+  console.log(chalk.cyan(" |_|   |_/_/\\_\\___|_| |_|   \\___|\\__|___/"));
+  console.log();
+  console.log(chalk.gray("  Terminal Pet Collection Game"));
+  console.log(chalk.gray("  Run: npx pixel-pets-cli pull"));
+  console.log();
 }

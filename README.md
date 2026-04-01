@@ -5,109 +5,55 @@
 </p>
 
 <p align="center">
-  <a href="#features">Features</a> |
-  <a href="#installation">Installation</a> |
-  <a href="#usage">Usage</a> |
-  <a href="#summon-system">Summon System</a> |
-  <a href="#contributing">Contributing</a> |
-  <a href="#license">License</a>
-</p>
-
-<p align="center">
-  <img src="https://img.shields.io/badge/version-1.0.0-blue.svg" alt="Version">
+  <img src="https://img.shields.io/badge/version-1.1.0-blue.svg" alt="Version">
   <img src="https://img.shields.io/badge/license-MIT-green.svg" alt="License">
   <img src="https://img.shields.io/badge/node-%3E%3D18.0.0-brightgreen.svg" alt="Node">
 </p>
 
 ---
 
-## IMPORTANT NOTICE
-
-```
-+------------------------------------------------------------------------+
-|                                                                        |
-|  THIS IS AN ORIGINAL, INDEPENDENT PROJECT                              |
-|                                                                        |
-|  * All code is original implementation                                 |
-|  * All creature designs are original creations                         |
-|  * All game mechanics are independently designed                       |
-|  * Created for educational and entertainment purposes                  |
-|                                                                        |
-|  This project uses standard, public domain algorithms:                 |
-|  - xorshift128+ PRNG (Wikipedia documented)                            |
-|  - djb2 hash function (public domain)                                  |
-|                                                                        |
-+------------------------------------------------------------------------+
-```
-
----
-
-## Language / Select Language
-
-| Language | Link |
-|----------|------|
-| English | [README.md](README.md) |
-| Traditional Chinese | [README_zh-TW.md](docs/i18n/README_zh-TW.md) |
-| Simplified Chinese | [README_zh-CN.md](docs/i18n/README_zh-CN.md) |
-| Japanese | [README_ja.md](docs/i18n/README_ja.md) |
-| Korean | [README_ko.md](docs/i18n/README_ko.md) |
-| Spanish | [README_es.md](docs/i18n/README_es.md) |
-| French | [README_fr.md](docs/i18n/README_fr.md) |
-| German | [README_de.md](docs/i18n/README_de.md) |
-| Portuguese | [README_pt.md](docs/i18n/README_pt.md) |
-| Russian | [README_ru.md](docs/i18n/README_ru.md) |
-
----
-
-## Features
-
-- **16 Original Creatures** - Slimeling, Fluffox, Sparkfin, Mossbear, Cloudpup, Crystalwing, Emberclaw, Frostwhisk, Thornback, Glowmoth, Sandscale, Stormfeather, Dewdrop, Ironpaw, Vineheart, Nightshade
-- **6 Tier System** - Bronze, Silver, Gold, Platinum, Diamond, Mythic
-- **Sparkle Variants** - Tier-based sparkle chances (0.5% - 5%)
-- **6 Attributes** - Vitality, Agility, Spirit, Luck, Charm, Focus
-- **Accessories** - 9 original accessory types
-- **Deterministic Summons** - Use seeds for reproducible results
-- **Animated ASCII Sprites** - Original 2-frame animations
-
----
-
-## Installation
-
-### Prerequisites
-
-- Node.js >= 18.0.0
-- npm or yarn
-
-### Quick Start
+## Quick Start
 
 ```bash
-# Clone the repository
-git clone https://github.com/haotool/pixel-pets-cli.git
-cd pixel-pets-cli
+# Run instantly without installation
+npx pixel-pets-cli
 
-# Install dependencies
-npm install
+# Summon a pet immediately
+npx pixel-pets-cli pull
 
-# Run the game
-npm run dev -- help
-```
+# Summon 10 pets
+npx pixel-pets-cli pull -n 10
 
-### Build from Source
+# Summon until getting a Gold tier or higher
+npx pixel-pets-cli pull -u g
 
-```bash
-npm run build
-node dist/index.js help
+# Summon up to 100 times or until Diamond
+npx pixel-pets-cli pull -n 100 -u d
 ```
 
 ---
 
-## Usage
+## Installation (Optional)
 
-### Commands
+```bash
+# Global install for faster access
+npm install -g pixel-pets-cli
+
+# Then use directly
+pixel-pets pull
+ppets pull  # Short alias
+```
+
+---
+
+## Commands
 
 | Command | Description |
 |---------|-------------|
-| `pull [seed]` | Summon a new pet (optional seed) |
+| `pull [seed]` | Summon a new pet |
+| `pull -n <count>` | Summon multiple pets |
+| `pull -u <tier>` | Summon until reaching tier |
+| `pull -n 100 -u gold` | Summon up to 100 or until gold |
 | `list` | Show your pet collection |
 | `show <name>` | Display detailed pet card |
 | `animate <name>` | Watch pet animation |
@@ -116,30 +62,25 @@ node dist/index.js help
 | `clear --confirm` | Clear all pets |
 | `help` | Show help information |
 
-### Examples
+### Tier Shortcuts
 
-```bash
-# Summon a random pet
-npm run dev -- pull
-
-# Summon with specific seed
-npm run dev -- pull my-lucky-seed
-
-# View collection
-npm run dev -- list
-
-# Check summon rates
-npm run dev -- rates
-```
+| Shortcut | Tier |
+|----------|------|
+| `b` | Bronze |
+| `s` | Silver |
+| `g` | Gold |
+| `p` | Platinum |
+| `d` | Diamond |
+| `m` | Mythic |
 
 ---
 
 ## Summon System
 
-### Tier Distribution (ORIGINAL VALUES)
+### Tier Distribution
 
-| Tier | Probability | Base Attributes | Sparkle Chance |
-|------|-------------|-----------------|----------------|
+| Tier | Probability | Base Stats | Sparkle Chance |
+|------|-------------|------------|----------------|
 | [B] Bronze | 45% | 10 | 0.5% |
 | [S] Silver | 30% | 20 | 0.8% |
 | [G] Gold | 15% | 35 | 1.2% |
@@ -147,26 +88,46 @@ npm run dev -- rates
 | [D] Diamond | 2.5% | 65 | 3.5% |
 | [M] Mythic | 0.5% | 80 | 5.0% |
 
-### Attribute Generation
+### Example Output
 
-Uses Bell curve distribution (Box-Muller transform):
-- Base value determined by tier
-- Variance of 25 points
-- Range: 1-100
+```
+  Summoning until MYTHIC (max 100)...
 
-### PRNG Implementation
+  Progress: 49 pulls completed!
 
-This project uses **xorshift128+**, a well-documented public domain algorithm:
+  Summon Results (49 total)
+  ---------------------------------------------
+  [B] bronze     x15
+  [S] silver     x16
+  [G] gold       x12
+  [P] platinum   x5
+  [M] mythic     x1 <-- TARGET
+  * Sparkle pets: 1
+  ---------------------------------------------
+  Target MYTHIC reached!
 
-```typescript
-class XorShift128Plus {
-  private s0: number;
-  private s1: number;
-  // ... implementation
-}
+  Best Pet Obtained:
+
++------------------------------------------+
+| Lucky Flake                              |
+| [M] MYTHIC (0.5%)                        |
++------------------------------------------+
+|  Species: frostwhisk   Face: (~.~)       |
++------------------------------------------+
 ```
 
-String hashing uses **djb2**, another public domain algorithm.
+---
+
+## Features
+
+- **16 Original Creatures** - Slimeling, Fluffox, Sparkfin, Mossbear, Cloudpup, Crystalwing, Emberclaw, Frostwhisk, Thornback, Glowmoth, Sandscale, Stormfeather, Dewdrop, Ironpaw, Vineheart, Nightshade
+- **6 Tier System** - Bronze, Silver, Gold, Platinum, Diamond, Mythic
+- **Sparkle Variants** - Tier-based sparkle chances
+- **6 Attributes** - Vitality, Agility, Spirit, Luck, Charm, Focus
+- **Batch Summons** - Pull multiple pets at once
+- **Target Summons** - Keep pulling until you get the tier you want
+- **Animated Effects** - Premium gacha animation experience
+- **Local Storage** - Your collection persists between sessions
 
 ---
 
@@ -176,50 +137,34 @@ String hashing uses **djb2**, another public domain algorithm.
 
 Pets are stored locally at `~/.pixel-pets/collection.json`
 
-### Project Structure
+### Algorithms Used
 
-```
-pixel-pets-cli/
-+-- src/
-|   +-- index.ts      # CLI entry point
-|   +-- types.ts      # Type definitions (original)
-|   +-- gacha.ts      # Summon mechanics (xorshift128+, djb2)
-|   +-- sprites.ts    # Original ASCII sprites
-|   +-- display.ts    # Terminal display
-|   +-- names.ts      # Original name generation
-|   +-- storage.ts    # Local storage
-+-- docs/
-|   +-- i18n/         # Translations
-+-- dist/             # Compiled output
-```
+- **xorshift128+** - PRNG (public domain)
+- **djb2** - Hash function (public domain)
 
 ---
 
-## Original Implementation Statement
+## Language
 
-This project is an **original creation**. The following are unique to this project:
-
-1. **All 16 creature species** - Original names and designs
-2. **All ASCII sprites** - Created specifically for this project
-3. **Tier system** - Original 6-tier structure with unique probabilities
-4. **Attribute system** - Original 6 attributes with Bell curve distribution
-5. **Name generation** - Original adjective/suffix combinations
-
-**Public domain algorithms used:**
-- xorshift128+ PRNG - Documented on Wikipedia
-- djb2 hash - Created by Daniel J. Bernstein, public domain
-
----
-
-## Contributing
-
-Contributions welcome! See [CONTRIBUTING.md](CONTRIBUTING.md).
+| Language | Link |
+|----------|------|
+| English | [README.md](README.md) |
+| Traditional Chinese | [README_zh-TW.md](docs/i18n/README_zh-TW.md) |
+| Simplified Chinese | [README_zh-CN.md](docs/i18n/README_zh-CN.md) |
+| Japanese | [README_ja.md](docs/i18n/README_ja.md) |
+| Korean | [README_ko.md](docs/i18n/README_ko.md) |
 
 ---
 
 ## License
 
 MIT License - see [LICENSE](LICENSE).
+
+---
+
+## Original Work Notice
+
+This is an original, independent project. All code, creature designs, and game mechanics are original creations. See [DISCLAIMER.md](DISCLAIMER.md) for details.
 
 ---
 
