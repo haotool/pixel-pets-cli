@@ -1,6 +1,6 @@
 {
   "name": "pixel-pets-cli",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "Terminal pet collection game - summon and collect pixel companions. Run with: npx pixel-pets-cli",
   "type": "module",
   "main": "dist/index.js",
