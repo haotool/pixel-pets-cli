@@ -1,11 +1,4 @@
-/**
- * Pixel Pets CLI - Original Gacha Implementation
- * 
- * Uses xorshift128+ PRNG (different from Mulberry32)
- * and djb2 hash (different from FNV-1a)
- * 
- * All mechanics are original designs.
- */
+/** Summon generation and probability helpers. */
 
 import {
   type Attribute,
@@ -24,17 +17,12 @@ import {
   TIER_WEIGHTS,
 } from "./types.js";
 
-/**
- * xorshift128+ PRNG - DIFFERENT from Mulberry32
- * This is a well-known public domain algorithm
- * Reference: https://en.wikipedia.org/wiki/Xorshift
- */
+/** Deterministic PRNG for summon generation. */
 class XorShift128Plus {
   private s0: number;
   private s1: number;
 
   constructor(seed: number) {
-    // Initialize state from seed using splitmix64-like expansion
     this.s0 = this.splitmix(seed);
     this.s1 = this.splitmix(this.s0);
   }
@@ -59,11 +47,7 @@ class XorShift128Plus {
   }
 }
 
-/**
- * djb2 hash - DIFFERENT from FNV-1a
- * This is a well-known public domain algorithm
- * Reference: http://www.cse.yorku.ca/~oz/hash.html
- */
+/** String hash used to derive deterministic seeds. */
 function djb2Hash(str: string): number {
   let hash = 5381;
   for (let i = 0; i < str.length; i++) {
@@ -77,10 +61,7 @@ function selectRandom<T>(rng: XorShift128Plus, items: readonly T[]): T {
   return items[Math.floor(rng.next() * items.length)]!;
 }
 
-/** 
- * ORIGINAL tier selection - uses different algorithm
- * Weighted selection with cumulative distribution
- */
+/** Select a tier using cumulative weights. */
 function selectTier(rng: XorShift128Plus): Tier {
   const weights = Object.values(TIER_WEIGHTS);
   const total = weights.reduce((sum, w) => sum + w, 0);
@@ -94,26 +75,21 @@ function selectTier(rng: XorShift128Plus): Tier {
   return "bronze";
 }
 
-/**
- * ORIGINAL attribute generation - completely different formula
- * Uses bell curve distribution instead of peak/dump system
- */
+/** Generate bounded attribute values from a normal distribution. */
 function generateAttributes(
   rng: XorShift128Plus,
   tier: Tier,
 ): Record<Attribute, number> {
   const base = TIER_BASE[tier];
-  const variance = 25; // Fixed variance
+  const variance = 25;
   
   const attrs = {} as Record<Attribute, number>;
   
   for (const attr of ATTRIBUTES) {
-    // Bell curve using Box-Muller transform
     const u1 = Math.max(0.0001, rng.next());
     const u2 = rng.next();
     const normal = Math.sqrt(-2 * Math.log(u1)) * Math.cos(2 * Math.PI * u2);
-    
-    // Scale and shift to desired range
+
     const value = base + Math.floor(normal * variance * 0.5);
     attrs[attr] = Math.max(1, Math.min(100, value));
   }
@@ -131,7 +107,6 @@ export interface GachaResult {
 function generateCreature(rng: XorShift128Plus): GachaResult {
   const tier = selectTier(rng);
   
-  // Accessory availability based on tier
   const accessoryPool = tier === "bronze" 
     ? (["none"] as const)
     : tier === "silver"

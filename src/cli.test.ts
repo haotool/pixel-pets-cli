@@ -22,6 +22,7 @@ test("CLI help uses the published package name", () => {
 
   assert.match(output, /Usage: pixel-pets-cli \[options\] \[command\]/);
   assert.match(output, /pull \[options\] \[seed\]/);
+  assert.doesNotMatch(output, /--until|pull -u/);
 });
 
 test("CLI pull persists a summoned pet in isolated storage", () => {
@@ -39,4 +40,23 @@ test("CLI pull persists a summoned pet in isolated storage", () => {
   assert.equal(pets.length, 1);
   assert.equal(pets[0]!.seedHash, "seed-4");
   assert.notEqual(pets[0]!.accessory, "none");
+});
+
+test("CLI multi-pull reveals every pet and stores the full batch", () => {
+  const tempHome = fs.mkdtempSync(path.join(os.tmpdir(), "pixel-pets-batch-"));
+  const output = runCli(["pull", "gallery-seed", "-n", "3"], tempHome);
+
+  assert.match(output, /Reveal 1\/3/);
+  assert.match(output, /Reveal 2\/3/);
+  assert.match(output, /Reveal 3\/3/);
+  assert.match(output, /Summon Summary \(3 pets\)/);
+
+  const storagePath = path.join(tempHome, ".pixel-pets", "collection.json");
+  const pets = JSON.parse(fs.readFileSync(storagePath, "utf8")) as Array<{ seedHash: string }>;
+
+  assert.equal(pets.length, 3);
+  assert.deepEqual(
+    pets.map((pet) => pet.seedHash),
+    ["gallery-seed:1", "gallery-seed:2", "gallery-seed:3"]
+  );
 });

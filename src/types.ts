@@ -1,11 +1,4 @@
-/**
- * Pixel Pets CLI - Original Implementation
- * 
- * This is an ORIGINAL gacha game implementation with completely
- * different species, stats, and mechanics from any existing system.
- * 
- * All values, names, and designs are original creations.
- */
+/** Shared domain types and constants. */
 
 /** Tier levels - different naming from common gacha systems */
 export const TIERS = [
@@ -18,7 +11,7 @@ export const TIERS = [
 ] as const;
 export type Tier = (typeof TIERS)[number];
 
-/** Original creature species - completely different from any existing system */
+/** Creature species. */
 export const CREATURES = [
   "slimeling",    // Original: small bouncy creature
   "fluffox",      // Original: fluffy fox-like
@@ -39,11 +32,11 @@ export const CREATURES = [
 ] as const;
 export type Creature = (typeof CREATURES)[number];
 
-/** Original expression styles */
+/** Expression glyphs. */
 export const EXPRESSIONS = ["^", "o", "=", "*", "~", "u", "w"] as const;
 export type Expression = (typeof EXPRESSIONS)[number];
 
-/** Original accessory types */
+/** Accessory types. */
 export const ACCESSORIES = [
   "none",
   "ribbon",
@@ -57,7 +50,7 @@ export const ACCESSORIES = [
 ] as const;
 export type Accessory = (typeof ACCESSORIES)[number];
 
-/** Original attribute names - completely different theme */
+/** Attribute names. */
 export const ATTRIBUTES = [
   "VITALITY",
   "AGILITY",
@@ -90,10 +83,7 @@ export interface PixelPet extends CreatureCore, CreatureIdentity {
   seedHash: string;
 }
 
-/** 
- * ORIGINAL tier weights - different distribution
- * Total: 1000 (for finer control)
- */
+/** Tier weights. Total weight: 1000. */
 export const TIER_WEIGHTS: Record<Tier, number> = {
   bronze: 450,     // 45%
   silver: 300,     // 30%
@@ -113,10 +103,17 @@ export const TIER_SYMBOLS: Record<Tier, string> = {
   mythic: "[M]",
 };
 
-/** 
- * ORIGINAL attribute base values - different formula
- * Uses different floor values than any existing system
- */
+/** Numeric rank used for comparisons and summaries. */
+export const TIER_RANK: Record<Tier, number> = {
+  bronze: 0,
+  silver: 1,
+  gold: 2,
+  platinum: 3,
+  diamond: 4,
+  mythic: 5,
+};
+
+/** Tier base values used for attribute generation. */
 export const TIER_BASE: Record<Tier, number> = {
   bronze: 10,
   silver: 20,
@@ -126,7 +123,7 @@ export const TIER_BASE: Record<Tier, number> = {
   mythic: 80,
 };
 
-/** Sparkle chance per tier - ORIGINAL values */
+/** Sparkle chance per tier. */
 export const SPARKLE_CHANCE: Record<Tier, number> = {
   bronze: 0.005,    // 0.5%
   silver: 0.008,    // 0.8%

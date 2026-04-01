@@ -1,8 +1,4 @@
-/**
- * Pixel Pets CLI - Local Storage
- * 
- * Stores pet collection in user's home directory.
- */
+/** File-based storage for the local collection. */
 
 import * as fs from "fs";
 import * as path from "path";

@@ -1,38 +1,32 @@
 #!/usr/bin/env node
 
-/**
- * Pixel Pets CLI - Main Entry Point
- * 
- * An ORIGINAL terminal pet collection game.
- * 
- * Quick Start:
- *   npx pixel-pets-cli
- *   npx pixel-pets-cli pull
- *   npx pixel-pets-cli pull -n 10 -u gold
- */
+/** CLI entry point. */
 
-import { Command } from "commander";
+import { Command, Option } from "commander";
 import chalk from "chalk";
 import path from "node:path";
-import type { PixelPet, Tier } from "./types.js";
+import { createRequire } from "node:module";
+import type { PixelPet } from "./types.js";
+import { TIER_RANK } from "./types.js";
 import { roll, createSeed } from "./gacha.js";
 import { generateNickname, generateTrait } from "./names.js";
 import { loadPets, addPet, findPetByNickname, clearPets } from "./storage.js";
 import {
   displayPetCard,
-  displayPetSummary,
-  displayGachaAnimation,
-  displayQuickAnimation,
-  displayBatchResults,
+  displaySingleSummonAnimation,
+  displayBatchSummonAnimation,
+  displayBatchPetReveal,
+  displaySummonSummary,
   displayPetList,
   displayAnimatedSprite,
   displayHelp,
   displayRates,
   displayStats,
   displayBanner,
-  tierMeetsTarget,
-  parseTier,
 } from "./display.js";
+
+const require = createRequire(import.meta.url);
+const { version } = require("../package.json") as { version: string };
 
 const program = new Command();
 const cliName = getCliName();
@@ -44,180 +38,141 @@ function getCliName(): string {
     : "pixel-pets-cli";
 }
 
-/** Pull a single pet with animation */
-async function pullSinglePet(seedInput?: string): Promise<PixelPet> {
-  const seed = seedInput || createSeed();
+function createPet(seed: string): PixelPet {
   const { core, identitySeed } = roll(seed);
 
-  await displayGachaAnimation(core.tier);
-
-  const pet: PixelPet = {
+  return {
     ...core,
     nickname: generateNickname(core.species, identitySeed),
     trait: generateTrait(identitySeed),
     obtainedAt: Date.now(),
     seedHash: seed,
   };
+}
 
+function createSeedSequence(count: number, baseSeed?: string): string[] {
+  return Array.from({ length: count }, (_, index) =>
+    baseSeed ? `${baseSeed}:${index + 1}` : createSeed()
+  );
+}
+
+function getBestPet(pets: PixelPet[]): PixelPet {
+  return pets.reduce((best, current) =>
+    TIER_RANK[current.tier] > TIER_RANK[best.tier] ? current : best
+  );
+}
+
+async function pullSinglePet(seedInput?: string): Promise<PixelPet> {
+  const seed = seedInput || createSeed();
+  const pet = createPet(seed);
+
+  await displaySingleSummonAnimation(pet);
   addPet(pet);
   displayPetCard(pet);
 
-  console.log(chalk.green(`  Added to collection!\n`));
+  console.log(chalk.green("  Added to collection!\n"));
   return pet;
 }
 
-/** Pull multiple pets */
-async function pullMultiplePets(
-  count: number,
-  untilTier: Tier | null
-): Promise<void> {
-  const pets: PixelPet[] = [];
-  let targetReached = false;
-  const maxPulls = count || 1000;
+async function pullMultiplePets(count: number, seedInput?: string): Promise<void> {
+  const total = Math.max(1, count);
+  const seeds = createSeedSequence(total, seedInput);
+  const pets = seeds.map((seed) => createPet(seed));
+  const revealConfig = await displayBatchSummonAnimation(total);
 
-  console.log();
+  pets.forEach((pet) => addPet(pet));
 
-  if (untilTier) {
-    console.log(
-      chalk.cyan(`  Summoning until ${untilTier.toUpperCase()} (max ${maxPulls})...\n`)
-    );
-  } else {
-    console.log(chalk.cyan(`  Summoning ${maxPulls} pets...\n`));
+  for (const [index, pet] of pets.entries()) {
+    await displayBatchPetReveal(pet, index, total, revealConfig);
   }
 
-  await displayQuickAnimation(Math.min(maxPulls, 10));
-
-  for (let i = 0; i < maxPulls; i++) {
-    const seed = createSeed();
-    const { core, identitySeed } = roll(seed);
-
-    const pet: PixelPet = {
-      ...core,
-      nickname: generateNickname(core.species, identitySeed),
-      trait: generateTrait(identitySeed),
-      obtainedAt: Date.now(),
-      seedHash: seed,
-    };
-
-    pets.push(pet);
-    addPet(pet);
-
-    // Show progress every 10 pulls
-    if ((i + 1) % 10 === 0) {
-      process.stdout.write(
-        `\r  Progress: ${chalk.cyan((i + 1).toString())} pulls...`
-      );
-    }
-
-    // Check if target tier reached
-    if (untilTier && tierMeetsTarget(core.tier, untilTier)) {
-      targetReached = true;
-      break;
-    }
-  }
-
-  console.log(`\r  Progress: ${chalk.green(pets.length.toString())} pulls completed!`);
-
-  // Display batch results
-  displayBatchResults(pets, untilTier, targetReached);
-
-  // Show the best pet obtained
-  const bestPet = pets.reduce((best, current) => {
-    const bestIdx = ["bronze", "silver", "gold", "platinum", "diamond", "mythic"].indexOf(best.tier);
-    const currIdx = ["bronze", "silver", "gold", "platinum", "diamond", "mythic"].indexOf(current.tier);
-    return currIdx > bestIdx ? current : best;
-  });
-
-  console.log(chalk.bold("  Best Pet Obtained:"));
-  displayPetCard(bestPet, true);
-
-  // If target was reached, show the target pet
-  if (targetReached && untilTier) {
-    const targetPet = pets.find((p) => tierMeetsTarget(p.tier, untilTier));
-    if (targetPet && targetPet !== bestPet) {
-      console.log(chalk.bold("  Target Pet:"));
-      displayPetCard(targetPet, true);
-    }
-  }
+  displaySummonSummary(pets, getBestPet(pets));
 }
 
-/** Show specific pet */
 function showPet(name: string): void {
   const pet = findPetByNickname(name);
   if (!pet) {
     console.log(chalk.red(`\n  Pet "${name}" not found.\n`));
     return;
   }
+
   displayPetCard(pet);
 }
 
-/** Animate specific pet */
 async function animatePet(name: string): Promise<void> {
   const pet = findPetByNickname(name);
   if (!pet) {
     console.log(chalk.red(`\n  Pet "${name}" not found.\n`));
     return;
   }
+
   console.log(chalk.bold(`\n  Watching ${pet.nickname}...\n`));
   await displayAnimatedSprite(pet, 3000);
 }
 
-/** Clear collection with confirmation */
 function clearCollection(confirm: boolean): void {
   if (!confirm) {
     console.log(chalk.yellow("\n  Use --confirm flag to clear collection.\n"));
     return;
   }
+
   clearPets();
   console.log(chalk.green("\n  Collection cleared.\n"));
 }
 
-// Setup CLI
 program
   .name(cliName)
   .description("Terminal pet collection game - summon and collect pixel companions")
-  .version("1.1.1");
+  .version(version);
 
 program
   .command("pull [seed]")
-  .description("Summon new pet(s)")
+  .description("Summon one or more pets with probability-based reveals")
   .option("-n, --count <number>", "Number of pets to summon", "1")
-  .option("-u, --until <tier>", "Summon until reaching tier (b/s/g/p/d/m)")
+  .addOption(
+    new Option("-u, --until <tier>", "Deprecated tier target option")
+      .hideHelp()
+  )
   .action(async (seed: string | undefined, options: { count: string; until?: string }) => {
-    const count = parseInt(options.count, 10);
-    const untilTier = options.until ? parseTier(options.until) : null;
+    const count = Number.parseInt(options.count, 10);
 
-    if (options.until && !untilTier) {
-      console.log(chalk.red("\n  Invalid tier. Use: b, s, g, p, d, or m\n"));
-      console.log(chalk.gray("  b=bronze, s=silver, g=gold, p=platinum, d=diamond, m=mythic\n"));
+    if (options.until) {
+      console.log(chalk.yellow("\n  Tier targeting has been removed.\n"));
+      console.log(chalk.gray("  Pixel Pets now keeps every summon fully probability-based."));
+      console.log(chalk.gray("  Use `pull -n <count>` to run a pure random multi-summon.\n"));
       return;
     }
 
-    if (count > 1 || untilTier) {
-      await pullMultiplePets(count, untilTier);
-    } else {
-      await pullSinglePet(seed);
+    if (!Number.isInteger(count) || count < 1) {
+      console.log(chalk.red("\n  Count must be a positive integer.\n"));
+      return;
     }
+
+    if (count === 1) {
+      await pullSinglePet(seed);
+      return;
+    }
+
+    await pullMultiplePets(count, seed);
   });
 
 program
   .command("list")
   .description("Show your pet collection")
   .action(() => {
-    const pets = loadPets();
-    displayPetList(pets);
+    displayPetList(loadPets());
   });
 
 program
   .command("show <name>")
-  .description("Display detailed pet card")
+  .description("Display a detailed pet card")
   .action((name: string) => {
     showPet(name);
   });
 
 program
   .command("animate <name>")
-  .description("Watch pet animation")
+  .description("Watch a pet animation")
   .action(async (name: string) => {
     await animatePet(name);
   });
@@ -226,8 +181,7 @@ program
   .command("stats")
   .description("Show collection statistics")
   .action(() => {
-    const pets = loadPets();
-    displayStats(pets);
+    displayStats(loadPets());
   });
 
 program
@@ -249,10 +203,9 @@ program
   .command("help")
   .description("Show help information")
   .action(() => {
-    displayHelp();
+    displayHelp(cliName);
   });
 
-// Default action - show banner and help
 if (process.argv.length <= 2) {
   displayBanner();
   displayHelp(cliName);

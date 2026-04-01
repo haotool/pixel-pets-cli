@@ -1,12 +1,8 @@
-/**
- * Pixel Pets CLI - Original Name Generation
- * 
- * All name components are original creations.
- */
+/** Nickname and trait generation. */
 
 import type { Creature } from "./types.js";
 
-/** Original adjective pool */
+/** Adjective pool. */
 const ADJECTIVES = [
   "Brave", "Swift", "Gentle", "Fierce", "Mystic",
   "Noble", "Wild", "Calm", "Bright", "Shadow",
@@ -15,7 +11,7 @@ const ADJECTIVES = [
   "Lucky", "Clever", "Dreamy", "Starry", "Misty",
 ];
 
-/** Original creature-specific suffixes */
+/** Creature-specific suffixes. */
 const SUFFIXES: Record<Creature, string[]> = {
   slimeling: ["Bounce", "Wobble", "Jelly", "Goo", "Blob"],
   fluffox: ["Tail", "Whisker", "Paw", "Snout", "Fur"],
@@ -35,7 +31,7 @@ const SUFFIXES: Record<Creature, string[]> = {
   nightshade: ["Shade", "Whisper", "Dusk", "Gloom", "Veil"],
 };
 
-/** Original trait templates */
+/** Trait templates. */
 const TRAIT_TEMPLATES = [
   "Loves to {action} during {time}",
   "Always {behavior} when {condition}",
@@ -97,7 +93,7 @@ const SECRETS = [
   "enjoys being alone sometimes", "is ticklish", "loves lullabies",
 ];
 
-/** Simple seeded random for name generation */
+/** Lightweight seeded RNG for deterministic text output. */
 function seededRandom(seed: number): () => number {
   let s = seed;
   return () => {
@@ -106,7 +102,7 @@ function seededRandom(seed: number): () => number {
   };
 }
 
-/** Pick random from array with seeded RNG */
+/** Select an item with a seeded RNG. */
 function pickSeeded<T>(rng: () => number, arr: readonly T[]): T {
   return arr[Math.floor(rng() * arr.length)]!;
 }

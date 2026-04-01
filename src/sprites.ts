@@ -1,17 +1,8 @@
-/**
- * Pixel Pets CLI - Original ASCII Sprites
- * 
- * All sprites are ORIGINAL designs created specifically for this project.
- * These are completely different from any existing ASCII pet systems.
- */
+/** ASCII sprite definitions and rendering helpers. */
 
 import type { Accessory, Creature, CreatureCore, Expression } from "./types.js";
 
-/**
- * ORIGINAL 4-line sprites with {E} expression placeholder
- * Each creature has 2 animation frames
- * All designs are unique creations
- */
+/** Four-line base sprites with an expression placeholder. */
 const SPRITES: Record<Creature, string[][]> = {
   slimeling: [
     ["   ___   ", "  ({E}{E})  ", " (    ) ", "  ~~~~  "],
@@ -79,7 +70,7 @@ const SPRITES: Record<Creature, string[][]> = {
   ],
 };
 
-/** Accessory decorations (placed above sprite) */
+/** Accessory decorations rendered above the base sprite. */
 const ACCESSORY_LINES: Record<Accessory, string> = {
   none: "",
   ribbon: "    ~    ",
@@ -132,10 +123,10 @@ export function renderFace(core: CreatureCore): string {
   return faces[core.species];
 }
 
-/** Sparkle effect frames */
+/** Sparkle frames for animated mode. */
 export const SPARKLE_FRAMES = ["*", "+", ".", "*"];
 
-/** Affection animation frames */
+/** Reserved affection frames for future interactions. */
 export const AFFECTION_FRAMES = [
   "   <3   <3  ",
   "  <3  <3    ",

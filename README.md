@@ -5,7 +5,7 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/version-1.1.2-blue.svg" alt="Version">
+  <img src="https://img.shields.io/badge/version-1.2.0-blue.svg" alt="Version">
   <img src="https://img.shields.io/badge/license-MIT-green.svg" alt="License">
   <img src="https://img.shields.io/badge/node-%3E%3D18.0.0-brightgreen.svg" alt="Node">
 </p>
@@ -24,11 +24,11 @@ npx pixel-pets-cli pull
 # Summon 10 pets
 npx pixel-pets-cli pull -n 10
 
-# Summon until getting a Gold tier or higher
-npx pixel-pets-cli pull -u g
+# Summon 50 pets with a repeatable seed sequence
+npx pixel-pets-cli pull gallery-seed -n 50
 
-# Summon up to 100 times or until Diamond
-npx pixel-pets-cli pull -n 100 -u d
+# Summon 100 pets with fast staged reveals
+npx pixel-pets-cli pull -n 100
 ```
 
 ---
@@ -52,9 +52,8 @@ ppets pull           # Short alias
 | Command | Description |
 |---------|-------------|
 | `pull [seed]` | Summon a new pet |
-| `pull -n <count>` | Summon multiple pets |
-| `pull -u <tier>` | Summon until reaching tier |
-| `pull -n 100 -u gold` | Summon up to 100 or until gold |
+| `pull -n <count>` | Summon multiple pets with staged reveals |
+| `pull <seed> -n <count>` | Run a repeatable multi-summon sequence |
 | `list` | Show your pet collection |
 | `show <name>` | Display detailed pet card |
 | `animate <name>` | Watch pet animation |
@@ -62,17 +61,6 @@ ppets pull           # Short alias
 | `rates` | Display summon rates |
 | `clear --confirm` | Clear all pets |
 | `help` | Show help information |
-
-### Tier Shortcuts
-
-| Shortcut | Tier |
-|----------|------|
-| `b` | Bronze |
-| `s` | Silver |
-| `g` | Gold |
-| `p` | Platinum |
-| `d` | Diamond |
-| `m` | Mythic |
 
 ---
 
@@ -89,32 +77,31 @@ ppets pull           # Short alias
 | [D] Diamond | 2.5% | 65 | 3.5% |
 | [M] Mythic | 0.5% | 80 | 5.0% |
 
-### Example Output
+### Multi-Summon Flow
 
 ```
-  Summoning until MYTHIC (max 100)...
+  Summoning 10 pets...
 
-  Progress: 49 pulls completed!
+  Gallery ready: 10 reveals
 
-  Summon Results (49 total)
+  Reveal 01/10
+  +------------------------------------------+
+  | Brave Thunder                            |
+  | [P] PLATINUM (7.0%)                      |
+  +------------------------------------------+
+  |  Species: stormfeather Face: (oo)        |
+  |  Expression: o  Accessory: feather       |
+  +------------------------------------------+
+
+  ...
+
+  Summon Summary (10 pets)
   ---------------------------------------------
-  [B] bronze     x15
-  [S] silver     x16
-  [G] gold       x12
-  [P] platinum   x5
-  [M] mythic     x1 <-- TARGET
-  * Sparkle pets: 1
+  [B] bronze     x4
+  [S] silver     x3
+  [G] gold       x2
+  [P] platinum   x1
   ---------------------------------------------
-  Target MYTHIC reached!
-
-  Best Pet Obtained:
-
-+------------------------------------------+
-| Lucky Flake                              |
-| [M] MYTHIC (0.5%)                        |
-+------------------------------------------+
-|  Species: frostwhisk   Face: (~.~)       |
-+------------------------------------------+
 ```
 
 ---
@@ -125,9 +112,10 @@ ppets pull           # Short alias
 - **6 Tier System** - Bronze, Silver, Gold, Platinum, Diamond, Mythic
 - **Sparkle Variants** - Tier-based sparkle chances
 - **6 Attributes** - Vitality, Agility, Spirit, Luck, Charm, Focus
-- **Batch Summons** - Pull multiple pets at once
-- **Target Summons** - Keep pulling until you get the tier you want
-- **Animated Effects** - Premium gacha animation experience
+- **Probability-First Summons** - No tier targeting, every pull stays true to the published odds
+- **Gallery-Style Multi Pulls** - Each pet is revealed with its own staged transition
+- **Adaptive Detail Levels** - Small batches show full cards, large batches switch to compact reveal cards
+- **TTY-Aware Rendering** - Rich animation in terminals and readable fallback output in non-interactive environments
 - **Local Storage** - Your collection persists between sessions
 
 ---
