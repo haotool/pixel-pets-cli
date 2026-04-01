@@ -1,11 +1,11 @@
 <h1 align="center">Pixel Pets CLI</h1>
 
 <p align="center">
-  <strong>Terminal pet collection game - summon and collect pixel companions</strong>
+  <strong>Collect cute ASCII companions!</strong>
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/version-1.2.1-blue.svg" alt="Version">
+  <img src="https://img.shields.io/badge/version-1.2.2-blue.svg" alt="Version">
   <img src="https://img.shields.io/badge/license-MIT-green.svg" alt="License">
   <img src="https://img.shields.io/badge/node-%3E%3D18.0.0-brightgreen.svg" alt="Node">
 </p>

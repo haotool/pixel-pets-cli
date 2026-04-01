@@ -17,27 +17,6 @@ const TIER_COLORS: Record<Tier, typeof chalk> = {
   mythic: chalk.hex("#FF00FF"),
 };
 
-const TIER_STARS: Record<Tier, string> = {
-  bronze: "★",
-  silver: "★★",
-  gold: "★★★",
-  platinum: "★★★★",
-  diamond: "★★★★★",
-  mythic: "★★★★★★",
-};
-
-const TIER_BLOCKS: Record<Tier, string> = {
-  bronze: "🟫",
-  silver: "⬜",
-  gold: "🟨",
-  platinum: "🟪",
-  diamond: "🟦",
-  mythic: "✨",
-};
-
-const SPINNER_ICONS = ["🎰", "🎲", "🎯", "🎪", "🎨"];
-const SHINY_FRAMES = ["✨", "⭐", "💫", "✨"];
-
 const PORTAL_FRAMES = [
   "   .      .   ",
   " .  * .. *  . ",
@@ -145,11 +124,7 @@ export function displayPetCard(pet: PixelPet): void {
 
   const sparkleTag = pet.sparkle ? " * SPARKLE *" : "";
   console.log(renderCardRow(color, innerWidth, chalk.bold.white(` ${pet.nickname}${sparkleTag}`)));
-  console.log(renderCardRow(
-    color,
-    innerWidth,
-    color(` ${TIER_SYMBOLS[pet.tier]} ${pet.tier.toUpperCase()} ${TIER_STARS[pet.tier]} (${probability}%)`)
-  ));
+  console.log(renderCardRow(color, innerWidth, color(` ${TIER_SYMBOLS[pet.tier]} ${pet.tier.toUpperCase()} (${probability}%)`)));
   console.log(border);
   console.log(renderCardRow(
     color,
@@ -312,32 +287,22 @@ export async function displayAnimatedSprite(pet: PixelPet, duration = 3000): Pro
   const startTime = Date.now();
   let frame = 0;
 
-  if (isInteractiveTerminal()) {
-    process.stdout.write("\x1B[?25l");
-  }
-
   console.log();
   initialSprite.forEach((line) => {
-    console.log((pet.sparkle ? chalk.yellow : TIER_COLORS[pet.tier])(`  ${line}`));
+    console.log(TIER_COLORS[pet.tier](`  ${line}`));
   });
 
-  try {
-    while (Date.now() - startTime < duration) {
-      const sprite = renderSprite(pet, frame);
-      process.stdout.write(`\x1B[${sprite.length}A`);
+  while (Date.now() - startTime < duration) {
+    const sprite = renderSprite(pet, frame);
+    process.stdout.write(`\x1B[${sprite.length}A`);
 
-      for (const line of sprite) {
-        const sparkle = pet.sparkle ? ` ${SPARKLE_FRAMES[frame % SPARKLE_FRAMES.length]}` : "";
-        console.log((pet.sparkle ? chalk.yellow : TIER_COLORS[pet.tier])(`  ${line}${sparkle}`));
-      }
+    for (const line of sprite) {
+      const sparkle = pet.sparkle ? ` ${SPARKLE_FRAMES[frame % SPARKLE_FRAMES.length]}` : "";
+      console.log(TIER_COLORS[pet.tier](`  ${line}${sparkle}`));
+    }
 
-      frame = (frame + 1) % frameCount;
-      await sleep(500);
-    }
-  } finally {
-    if (isInteractiveTerminal()) {
-      process.stdout.write("\x1B[?25h");
-    }
+    frame = (frame + 1) % frameCount;
+    await sleep(400);
   }
 
   console.log();
@@ -430,13 +395,12 @@ export function displayStats(pets: PixelPet[]): void {
 
 export function displayBanner(): void {
   console.log();
-  console.log(chalk.cyan("  ____  _          _   ____      _       "));
-  console.log(chalk.cyan(" |  _ \\(_)_  _____| | |  _ \\ ___| |_ ___ "));
-  console.log(chalk.cyan(" | |_) | \\ \\/ / _ \\ | | |_) / _ \\ __/ __|"));
-  console.log(chalk.cyan(" |  __/| |>  <  __/ | |  __/  __/ |_\\__ \\"));
-  console.log(chalk.cyan(" |_|   |_/_/\\_\\___|_| |_|   \\___|\\__|___/"));
+  console.log(chalk.cyan("  ___ _         _   ___     _      ___ ___ ___ "));
+  console.log(chalk.cyan(" | _ (_)_ _____| | | _ \\___| |_   / __| | |_ _|"));
+  console.log(chalk.cyan(" |  _/ \\ \\/ / -_) | |  _/ -_)  _| | (__| | || | "));
+  console.log(chalk.cyan(" |_| |_/_/\\_\\___|_| |_| \\___|\\__|  \\___|_|_|___|"));
   console.log();
-  console.log(chalk.gray("  Probability-first terminal pet collection game"));
+  console.log(chalk.gray("  Collect cute ASCII companions!"));
   console.log(chalk.gray("  Run: npx pixel-pets-cli pull"));
   console.log();
 }
@@ -451,19 +415,6 @@ async function playRevealSequence(
 ): Promise<void> {
   const color = TIER_COLORS[pet.tier];
 
-  if (isInteractiveTerminal()) {
-    for (let index = 0; index < 15; index++) {
-      const spinner = SPINNER_ICONS[index % SPINNER_ICONS.length]!;
-      const block = TIER_BLOCKS[TIERS[index % TIERS.length]!]!;
-      const accentBlock = TIER_BLOCKS[pet.tier];
-      process.stdout.write(
-        `\r  ${chalk.cyan("Rolling...")} ${spinner} ${chalk.gray(block)} ${color(accentBlock)}`
-      );
-      await sleep(Math.max(50, config.reelDelay));
-    }
-    process.stdout.write("\r" + " ".repeat(40) + "\r");
-  }
-
   process.stdout.write("\n");
   for (const frame of PORTAL_FRAMES) {
     process.stdout.write(`\r  ${chalk.yellow(frame)}`);
@@ -476,17 +427,7 @@ async function playRevealSequence(
     await sleep(config.reelDelay);
   }
 
-  process.stdout.write(
-    `\r  ${chalk.green("🎉")} ${color.bold(`${TIER_STARS[pet.tier]} ${pet.tier.toUpperCase()} ${pet.species}`)}`
-  );
+  process.stdout.write(`\r  ${color(">>>")} ${color.bold(` ${pet.tier.toUpperCase()} `)} ${color("<<<")}`);
   await sleep(Math.max(160, config.reelDelay * 3));
-
-  if (pet.sparkle) {
-    for (const frame of SHINY_FRAMES) {
-      process.stdout.write(`\r  ${frame} ${chalk.yellow.bold("✨ SHINY! ✨")}`);
-      await sleep(300);
-    }
-  }
-
   console.log("\n");
 }

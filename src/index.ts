@@ -122,7 +122,7 @@ function clearCollection(confirm: boolean): void {
 
 program
   .name(cliName)
-  .description("Terminal pet collection game - summon and collect pixel companions")
+  .description("Collect cute ASCII companions!")
   .version(version);
 
 program
