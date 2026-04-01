@@ -6,6 +6,7 @@
 
 import chalk from "chalk";
 import ora from "ora";
+import stringWidth from "string-width";
 import type { Attribute, PixelPet, Tier } from "./types.js";
 import { ATTRIBUTES, TIER_SYMBOLS, TIERS } from "./types.js";
 import {
@@ -58,6 +59,22 @@ function renderBar(value: number, width = 12): string {
   return chalk.green("=".repeat(filled)) + chalk.gray("-".repeat(width - filled));
 }
 
+function getCardInnerWidth(): number {
+  if (!process.stdout.isTTY || !process.stdout.columns) {
+    return 42;
+  }
+
+  return Math.max(42, Math.min(58, process.stdout.columns - 4));
+}
+
+function padVisible(text: string, width: number): string {
+  return text + " ".repeat(Math.max(0, width - stringWidth(text)));
+}
+
+function renderCardRow(color: typeof chalk, innerWidth: number, content: string): string {
+  return color("|") + padVisible(content, innerWidth) + color("|");
+}
+
 /** Format attribute line */
 function formatAttribute(name: Attribute, value: number): string {
   const bar = renderBar(value);
@@ -70,65 +87,63 @@ export function displayPetCard(pet: PixelPet, compact = false): void {
   const color = TIER_COLORS[pet.tier];
   const symbol = TIER_SYMBOLS[pet.tier];
   const prob = getTierProbability(pet.tier).toFixed(1);
-  const W = 42;
+  const innerWidth = getCardInnerWidth();
+  const border = color("+" + "-".repeat(innerWidth) + "+");
 
   console.log();
-  console.log(color("+" + "-".repeat(W) + "+"));
+  console.log(border);
 
   const sparkleTag = pet.sparkle ? " * SPARKLE *" : "";
   const title = `${pet.nickname}${sparkleTag}`;
-  console.log(color("|") + chalk.bold.white(` ${title}`.padEnd(W)) + color("|"));
+  console.log(renderCardRow(color, innerWidth, chalk.bold.white(` ${title}`)));
 
   const tierLine = `${symbol} ${pet.tier.toUpperCase()} (${prob}%)`;
-  console.log(color("|") + color(` ${tierLine}`.padEnd(W)) + color("|"));
+  console.log(renderCardRow(color, innerWidth, color(` ${tierLine}`)));
 
-  console.log(color("+" + "-".repeat(W) + "+"));
+  console.log(border);
 
   const face = renderFace(pet);
-  console.log(
-    color("|") +
-      chalk.white(`  Species: ${pet.species.padEnd(12)} Face: ${face}`.padEnd(W)) +
-      color("|")
-  );
+  console.log(renderCardRow(
+    color,
+    innerWidth,
+    chalk.white(`  Species: ${pet.species.padEnd(12)} Face: ${face}`)
+  ));
 
   if (!compact) {
-    console.log(
-      color("|") +
-        chalk.white(`  Expression: ${pet.expression}  Accessory: ${pet.accessory}`.padEnd(W)) +
-        color("|")
-    );
+    console.log(renderCardRow(
+      color,
+      innerWidth,
+      chalk.white(`  Expression: ${pet.expression}  Accessory: ${pet.accessory}`)
+    ));
 
-    console.log(color("+" + "-".repeat(W) + "+"));
-    console.log(color("|") + chalk.bold.white("  ATTRIBUTES".padEnd(W)) + color("|"));
+    console.log(border);
+    console.log(renderCardRow(color, innerWidth, chalk.bold.white("  ATTRIBUTES")));
 
     for (const attr of ATTRIBUTES) {
       const line = formatAttribute(attr, pet.attributes[attr]);
-      console.log(color("|") + `  ${line}`.padEnd(W) + color("|"));
+      console.log(renderCardRow(color, innerWidth, `  ${line}`));
     }
 
-    console.log(color("+" + "-".repeat(W) + "+"));
-    console.log(color("|") + chalk.bold.white("  SPRITE".padEnd(W)) + color("|"));
+    console.log(border);
+    console.log(renderCardRow(color, innerWidth, chalk.bold.white("  SPRITE")));
 
     const sprite = renderSprite(pet, 0);
     for (const line of sprite) {
       const displayLine = pet.sparkle ? `  ${line} *` : `  ${line}`;
-      console.log(color("|") + displayLine.padEnd(W) + color("|"));
+      console.log(renderCardRow(color, innerWidth, displayLine));
     }
 
-    console.log(color("+" + "-".repeat(W) + "+"));
+    console.log(border);
 
-    const traitLines = wrapText(pet.trait, W - 6);
-    console.log(
-      color("|") + chalk.gray(`  "${traitLines[0]}`.padEnd(W)) + color("|")
-    );
-    for (let i = 1; i < traitLines.length; i++) {
-      console.log(
-        color("|") + chalk.gray(`   ${traitLines[i]}`.padEnd(W)) + color("|")
-      );
-    }
+    const traitLines = wrapText(pet.trait, innerWidth - 6);
+    traitLines.forEach((line, index) => {
+      const prefix = index === 0 ? '  "' : "   ";
+      const suffix = index === traitLines.length - 1 ? '"' : "";
+      console.log(renderCardRow(color, innerWidth, chalk.gray(`${prefix}${line}${suffix}`)));
+    });
   }
 
-  console.log(color("+" + "-".repeat(W) + "+"));
+  console.log(border);
   console.log();
 }
 
@@ -154,7 +169,8 @@ function wrapText(text: string, maxWidth: number): string[] {
   let current = "";
 
   for (const word of words) {
-    if (current.length + word.length + 1 <= maxWidth) {
+    const next = current ? `${current} ${word}` : word;
+    if (stringWidth(next) <= maxWidth) {
       current += (current ? " " : "") + word;
     } else {
       if (current) lines.push(current);
