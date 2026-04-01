@@ -351,7 +351,7 @@ export async function displayAnimatedSprite(
 }
 
 /** Display help */
-export function displayHelp(): void {
+export function displayHelp(cliName = "pixel-pets-cli"): void {
   console.log(`
   ${chalk.bold("Pixel Pets CLI")} - Terminal Pet Collection Game
 
@@ -378,13 +378,13 @@ export function displayHelp(): void {
 
   ${chalk.bold("Examples:")}
     ${chalk.gray("# Summon 10 pets")}
-    pixel-pets pull -n 10
+    ${cliName} pull -n 10
 
     ${chalk.gray("# Summon until getting a gold or higher")}
-    pixel-pets pull -u g
+    ${cliName} pull -u g
 
     ${chalk.gray("# Summon up to 50 times or until diamond")}
-    pixel-pets pull -n 50 -u d
+    ${cliName} pull -n 50 -u d
 `);
 }
 

@@ -5,7 +5,7 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/version-1.1.0-blue.svg" alt="Version">
+  <img src="https://img.shields.io/badge/version-1.1.1-blue.svg" alt="Version">
   <img src="https://img.shields.io/badge/license-MIT-green.svg" alt="License">
   <img src="https://img.shields.io/badge/node-%3E%3D18.0.0-brightgreen.svg" alt="Node">
 </p>
@@ -40,8 +40,9 @@ npx pixel-pets-cli pull -n 100 -u d
 npm install -g pixel-pets-cli
 
 # Then use directly
-pixel-pets pull
-ppets pull  # Short alias
+pixel-pets-cli pull
+pixel-pets pull      # Alias
+ppets pull           # Short alias
 ```
 
 ---

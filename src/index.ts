@@ -13,6 +13,7 @@
 
 import { Command } from "commander";
 import chalk from "chalk";
+import path from "node:path";
 import type { PixelPet, Tier } from "./types.js";
 import { roll, createSeed } from "./gacha.js";
 import { generateNickname, generateTrait } from "./names.js";
@@ -34,6 +35,14 @@ import {
 } from "./display.js";
 
 const program = new Command();
+const cliName = getCliName();
+
+function getCliName(): string {
+  const invokedAs = process.argv[1] ? path.basename(process.argv[1]) : "";
+  return invokedAs && !/^index\.[cm]?[jt]s$/.test(invokedAs)
+    ? invokedAs
+    : "pixel-pets-cli";
+}
 
 /** Pull a single pet with animation */
 async function pullSinglePet(seedInput?: string): Promise<PixelPet> {
@@ -165,9 +174,9 @@ function clearCollection(confirm: boolean): void {
 
 // Setup CLI
 program
-  .name("pixel-pets")
+  .name(cliName)
   .description("Terminal pet collection game - summon and collect pixel companions")
-  .version("1.1.0");
+  .version("1.1.1");
 
 program
   .command("pull [seed]")
@@ -246,7 +255,7 @@ program
 // Default action - show banner and help
 if (process.argv.length <= 2) {
   displayBanner();
-  displayHelp();
+  displayHelp(cliName);
 } else {
   program.parse();
 }
