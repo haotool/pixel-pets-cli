@@ -1,45 +1,72 @@
 <h1 align="center">Pixel Pets CLI</h1>
 
 <p align="center">
-  <strong>터미널 펫 컬렉션 게임 - 픽셀 동반자를 소환하고 수집하세요</strong>
+  <strong>터미널에서 즐기는 펫 수집 게임. 픽셀 동반자를 소환하고 모아 보세요.</strong>
+</p>
+
+<p align="center">
+  <a href="../../README.md">English</a> |
+  <a href="README_zh-TW.md">繁體中文</a> |
+  <a href="README_zh-CN.md">简体中文</a> |
+  <a href="README_ja.md">日本語</a> |
+  <strong>한국어</strong>
 </p>
 
 ---
 
-## 중요 공지
+## 빠른 시작
 
+```bash
+# 바로 실행
+npx pixel-pets-cli
+
+# 단일 소환
+npx pixel-pets-cli pull
+
+# 10연 소환, 각 펫을 순서대로 공개
+npx pixel-pets-cli pull -n 10
+
+# 고정 seed 기반 50연 소환, 동일 결과 재현 가능
+npx pixel-pets-cli pull gallery-seed -n 50
+
+# 100연 소환도 전부 개별 표시
+npx pixel-pets-cli pull -n 100
 ```
-+------------------------------------------------------------------------+
-|  이것은 오리지널, 독립적인 프로젝트입니다                              |
-|  * 모든 코드는 오리지널 구현입니다                                     |
-|  * 모든 크리처 디자인은 오리지널입니다                                 |
-|  * 퍼블릭 도메인 알고리즘 사용: xorshift128+, djb2                     |
-+------------------------------------------------------------------------+
-```
-
----
-
-## 기능
-
-- **16종의 오리지널 크리처** - 슬라임링, 플러폭스, 스파크핀, 모스베어, 클라우드펍, 크리스탈윙, 엠버클로, 프로스트위스크, 쏜백, 글로우모스, 샌드스케일, 스톰페더, 듀드롭, 아이언포, 바인하트, 나이트셰이드
-- **6단계 티어 시스템** - 브론즈, 실버, 골드, 플래티넘, 다이아몬드, 미식
-- **스파클 변종** - 티어 기반 스파클 확률 (0.5% - 5%)
-- **6가지 속성** - 활력, 민첩, 정신, 행운, 매력, 집중
 
 ---
 
 ## 설치
 
 ```bash
-git clone https://github.com/haotool/pixel-pets-cli.git
-cd pixel-pets-cli
-npm install
-npm run dev -- help
+npm install -g pixel-pets-cli
+
+pixel-pets-cli pull
+pixel-pets pull
+ppets pull
 ```
 
 ---
 
-## 소환 시스템
+## 명령어
+
+| 명령어 | 설명 |
+|--------|------|
+| `pull [seed]` | 단일 소환 또는 고정 seed 소환 |
+| `pull -n <count>` | 다중 소환, 각 펫을 완전 표시 |
+| `pull <seed> -n <count>` | 재현 가능한 seed 시퀀스로 다중 소환 |
+| `list` | 컬렉션 목록 표시 |
+| `show <name>` | 상세 카드 표시 |
+| `animate <name>` | 펫 애니메이션 재생 |
+| `stats` | 컬렉션 통계 표시 |
+| `rates` | 소환 확률 표시 |
+| `clear --confirm` | 컬렉션 초기화 |
+| `help` | 도움말 표시 |
+
+---
+
+## 소환 규칙
+
+### 티어 확률
 
 | 티어 | 확률 | 기본 속성 | 스파클 확률 |
 |------|------|-----------|-------------|
@@ -50,14 +77,34 @@ npm run dev -- help
 | [D] 다이아몬드 | 2.5% | 65 | 3.5% |
 | [M] 미식 | 0.5% | 80 | 5.0% |
 
+### 다중 소환 흐름
+
+- 모든 소환은 공개된 확률만 따르며, 특정 티어 지정이나 추격 소환은 없습니다.
+- `pull -n <count>` 는 요약만 출력하지 않고 각 펫을 순차적으로 reveal 합니다.
+- 소규모 배치는 상세 카드, 대규모 배치는 빠른 gallery reveal 을 사용하지만 전부 표시합니다.
+- TTY 환경에서는 풍부한 애니메이션, 비대화형 환경에서는 읽기 쉬운 텍스트 출력으로 자동 전환됩니다.
+
+---
+
+## 특징
+
+- **16종 오리지널 크리처**
+- **6단계 희귀도 시스템**
+- **스파클 변종과 액세서리**
+- **재현 가능한 seed 소환**
+- **TTY 인식 애니메이션**
+- **로컬 컬렉션 저장**
+
+---
+
+## 기술 메모
+
+- 저장 위치는 `~/.pixel-pets/collection.json`
+- PRNG 는 `xorshift128+`
+- 문자열 seed 는 `djb2` 로 결정적 난수 상태로 변환
+
 ---
 
 ## 라이선스
 
-MIT License
-
----
-
-<p align="center">
-  <sub>교육과 오락을 위해 만들어진 오리지널 프로젝트.</sub>
-</p>
+MIT License - [LICENSE](../../LICENSE) 참고
