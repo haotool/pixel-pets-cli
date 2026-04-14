@@ -3,9 +3,16 @@
 import chalk from "chalk";
 import ora from "ora";
 import stringWidth from "string-width";
-import type { Attribute, PixelPet, Tier } from "./types.js";
-import { ATTRIBUTES, TIERS, TIER_RANK, TIER_SYMBOLS } from "./types.js";
-import { renderFace, renderSprite, getFrameCount, SPARKLE_FRAMES } from "./sprites.js";
+import type { Attribute, FrameId, PixelPet, Tier } from "./types.js";
+import {
+  ATTRIBUTES,
+  FRAME_DURATION_MS,
+  IDLE_SEQUENCE,
+  TIERS,
+  TIER_RANK,
+  TIER_SYMBOLS,
+} from "./types.js";
+import { renderFace, renderSprite, SPARKLE_FRAMES } from "./sprites.js";
 import { getTierProbability, getSparkleProbability } from "./gacha.js";
 
 const TIER_COLORS: Record<Tier, typeof chalk> = {
@@ -281,11 +288,10 @@ export function displayPetList(pets: PixelPet[]): void {
   console.log(chalk.gray("  " + "-".repeat(50)) + "\n");
 }
 
-export async function displayAnimatedSprite(pet: PixelPet, duration = 3000): Promise<void> {
+export async function displayAnimatedSprite(pet: PixelPet, duration = 6000): Promise<void> {
   const initialSprite = renderSprite(pet, 0);
-  const frameCount = getFrameCount(pet.species);
   const startTime = Date.now();
-  let frame = 0;
+  let tick = 0;
 
   console.log();
   initialSprite.forEach((line) => {
@@ -293,16 +299,19 @@ export async function displayAnimatedSprite(pet: PixelPet, duration = 3000): Pro
   });
 
   while (Date.now() - startTime < duration) {
-    const sprite = renderSprite(pet, frame);
+    const frameId = IDLE_SEQUENCE[tick % IDLE_SEQUENCE.length] as FrameId;
+    const sprite = renderSprite(pet, frameId);
     process.stdout.write(`\x1B[${sprite.length}A`);
 
     for (const line of sprite) {
-      const sparkle = pet.sparkle ? ` ${SPARKLE_FRAMES[frame % SPARKLE_FRAMES.length]}` : "";
+      const sparkle = pet.sparkle
+        ? ` ${SPARKLE_FRAMES[tick % SPARKLE_FRAMES.length]}`
+        : "";
       console.log(TIER_COLORS[pet.tier](`  ${line}${sparkle}`));
     }
 
-    frame = (frame + 1) % frameCount;
-    await sleep(400);
+    tick++;
+    await sleep(FRAME_DURATION_MS);
   }
 
   console.log();

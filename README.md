@@ -5,7 +5,7 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/version-1.2.2-blue.svg" alt="Version">
+  <img src="https://img.shields.io/badge/version-2.5.0-blue.svg" alt="Version">
   <img src="https://img.shields.io/badge/license-MIT-green.svg" alt="License">
   <img src="https://img.shields.io/badge/node-%3E%3D18.0.0-brightgreen.svg" alt="Node">
 </p>
@@ -85,23 +85,23 @@ ppets pull           # Short alias
   Gallery ready: 10 reveals
 
   Reveal 01/10
-  +------------------------------------------+
-  | Brave Thunder                            |
-  | [P] PLATINUM (7.0%)                      |
-  +------------------------------------------+
-  |  Species: stormfeather Face: (oo)        |
-  |  Expression: o  Accessory: feather       |
-  +------------------------------------------+
+  +----------------------------------------------+
+  | Brave Thunder                                |
+  | [P] PLATINUM (7.0%)                          |
+  +----------------------------------------------+
+  |  Species: stormfeather Face: (oo)            |
+  |  Expression: o  Accessory: feather           |
+  +----------------------------------------------+
 
   ...
 
   Summon Summary (10 pets)
-  ---------------------------------------------
+  -----------------------------------------------
   [B] bronze     x4
   [S] silver     x3
   [G] gold       x2
   [P] platinum   x1
-  ---------------------------------------------
+  -----------------------------------------------
 ```
 
 ---
@@ -110,13 +110,87 @@ ppets pull           # Short alias
 
 - **16 Original Creatures** - Slimeling, Fluffox, Sparkfin, Mossbear, Cloudpup, Crystalwing, Emberclaw, Frostwhisk, Thornback, Glowmoth, Sandscale, Stormfeather, Dewdrop, Ironpaw, Vineheart, Nightshade
 - **6 Tier System** - Bronze, Silver, Gold, Platinum, Diamond, Mythic
-- **Sparkle Variants** - Tier-based sparkle chances
+- **3-Frame Animation** - Idle, action, and secondary poses with blink support
+- **Sparkle Variants** - Tier-based sparkle chances with animated effects
 - **6 Attributes** - Vitality, Agility, Spirit, Luck, Charm, Focus
 - **Probability-First Summons** - No tier targeting, every pull stays true to the published odds
 - **Gallery-Style Multi Pulls** - Each pet is revealed with its own staged transition
-- **Full Per-Pet Presentation** - Multi-summons use the same complete interface as single pulls
 - **TTY-Aware Rendering** - Rich animation in terminals and readable fallback output in non-interactive environments
 - **Local Storage** - Your collection persists between sessions
+
+---
+
+## Sprite System (v2.3)
+
+### Dimensions
+- **Height**: 5 lines
+- **Width**: 12 characters (rendered, after eye placeholder replacement)
+- **Frames**: 3 per species (idle, action, secondary)
+- **Eye Placeholder**: `{E}` replaced at render time
+
+### Design Principles (v2.5)
+- **Perfect visual centering**: Head features align directly above eyes
+- **Unified eye pattern**: All species use `(o o)` with consistent spacing
+- **Clear silhouettes**: Each species has recognizable features
+
+### Sample Creatures
+```
+┌─────────────┬─────────────┬─────────────┬─────────────┐
+│ SLIMELING   │ FLUFFOX     │ SPARKFIN    │ MOSSBEAR    │
+├─────────────┼─────────────┼─────────────┼─────────────┤
+│    .---.    │   /\   /\   │             │   (^ ^)     │
+│    (o o)    │    (o o)    │    ><o>     │    (o o)    │
+│   (     )   │     (w)     │   /----\    │    (  )     │
+│    \___/    │    /| |\    │  <  ~~  >   │    /|\      │
+│    ~~~~~    │   (_   _)   │   \----/    │   / | \     │
+└─────────────┴─────────────┴─────────────┴─────────────┘
+
+┌─────────────┬─────────────┬─────────────┬─────────────┐
+│ CLOUDPUP    │ CRYSTALWING │ EMBERCLAW   │ FROSTWHISK  │
+├─────────────┼─────────────┼─────────────┼─────────────┤
+│    U U      │   *\  /*    │   ~^~^~     │    /\_/\    │
+│    (o o)    │    (o o)    │    (o o)    │    (o o)    │
+│     (w)     │     ||      │    \==/     │    =\/=     │
+│    /| |\    │    /  \     │    /||\     │     ||      │
+│    ~~~~~    │    *  *     │    ~ ~      │    *~~*     │
+└─────────────┴─────────────┴─────────────┴─────────────┘
+
+┌─────────────┬─────────────┬─────────────┬─────────────┐
+│ THORNBACK   │ GLOWMOTH    │ SANDSCALE   │ STORMFEATHER│
+├─────────────┼─────────────┼─────────────┼─────────────┤
+│   /\/\/\    │    \* */    │    (o o)    │    \\//     │
+│    (o o)    │    (o o)    │    /--\     │    (o o)    │
+│   |[==]|    │     ||      │   /    \    │     <v>     │
+│    \__/     │    /||\     │   (~~~~)    │     /|\     │
+│    d  b     │    *  *     │    ~~~~     │     / \     │
+└─────────────┴─────────────┴─────────────┴─────────────┘
+
+┌─────────────┬─────────────┬─────────────┬─────────────┐
+│ DEWDROP     │ IRONPAW     │ VINEHEART   │ NIGHTSHADE  │
+├─────────────┼─────────────┼─────────────┼─────────────┤
+│      o      │    _[]_     │    ~\/~     │     ._.     │
+│    (o o)    │    [o o]    │    (o o)    │    (o o)    │
+│    (  )     │    [==]     │    (  )     │    (   )    │
+│    \__/     │    |  |     │     \/      │     \/      │
+│    ~~~~     │   _|__|_    │    ~||~     │      .      │
+└─────────────┴─────────────┴─────────────┴─────────────┘
+```
+
+### Animation Sequence
+```
+[Rest] → [Rest] → [Rest] → [Rest] → [Action] → [Rest] → [Rest] → [Rest] → [Blink] → [Rest] → [Rest] → [Secondary] → [Rest] → [Rest] → [Rest]
+```
+
+### Expression System
+| Glyph | Emotion |
+|-------|---------|
+| `^` | Happy |
+| `o` | Neutral |
+| `=` | Sleepy |
+| `*` | Excited |
+| `~` | Playful |
+| `u` | Sad |
+| `w` | Cute |
 
 ---
 
@@ -130,6 +204,10 @@ Pets are stored locally at `~/.pixel-pets/collection.json`
 
 - **xorshift128+** - PRNG (public domain)
 - **djb2** - Hash function (public domain)
+
+### Architecture
+
+See [docs/SPEC.md](docs/SPEC.md) for detailed technical specification.
 
 ---
 

@@ -1,9 +1,9 @@
 /** Shared domain types and constants. */
 
-/** Tier levels - different naming from common gacha systems */
+/** Tier levels. */
 export const TIERS = [
   "bronze",
-  "silver", 
+  "silver",
   "gold",
   "platinum",
   "diamond",
@@ -13,28 +13,31 @@ export type Tier = (typeof TIERS)[number];
 
 /** Creature species. */
 export const CREATURES = [
-  "slimeling",    // Original: small bouncy creature
-  "fluffox",      // Original: fluffy fox-like
-  "sparkfin",     // Original: electric fish
-  "mossbear",     // Original: nature bear
-  "cloudpup",     // Original: sky puppy
-  "crystalwing",  // Original: gem butterfly
-  "emberclaw",    // Original: fire lizard
-  "frostwhisk",   // Original: ice cat
-  "thornback",    // Original: plant turtle
-  "glowmoth",     // Original: luminous moth
-  "sandscale",    // Original: desert snake
-  "stormfeather", // Original: thunder bird
-  "dewdrop",      // Original: water sprite
-  "ironpaw",      // Original: metal wolf
-  "vineheart",    // Original: forest spirit
-  "nightshade",   // Original: shadow creature
+  "slimeling",
+  "fluffox",
+  "sparkfin",
+  "mossbear",
+  "cloudpup",
+  "crystalwing",
+  "emberclaw",
+  "frostwhisk",
+  "thornback",
+  "glowmoth",
+  "sandscale",
+  "stormfeather",
+  "dewdrop",
+  "ironpaw",
+  "vineheart",
+  "nightshade",
 ] as const;
 export type Creature = (typeof CREATURES)[number];
 
-/** Expression glyphs. */
+/** Expression glyphs for eyes. */
 export const EXPRESSIONS = ["^", "o", "=", "*", "~", "u", "w"] as const;
 export type Expression = (typeof EXPRESSIONS)[number];
+
+/** Blink glyph replaces expression during blink frames. */
+export const BLINK_GLYPH = "-";
 
 /** Accessory types. */
 export const ACCESSORIES = [
@@ -60,6 +63,24 @@ export const ATTRIBUTES = [
   "FOCUS",
 ] as const;
 export type Attribute = (typeof ATTRIBUTES)[number];
+
+/** Animation frame identifiers. -1 = blink, 0-2 = sprite frames. */
+export type FrameId = -1 | 0 | 1 | 2;
+
+/** Idle animation sequence. */
+export const IDLE_SEQUENCE: readonly FrameId[] = [
+  0, 0, 0, 0,
+  1, 0, 0, 0,
+  -1, 0, 0,
+  2, 0, 0, 0,
+];
+
+/** Frame duration in milliseconds. */
+export const FRAME_DURATION_MS = 400;
+
+/** Sprite dimensions. */
+export const SPRITE_HEIGHT = 5;
+export const SPRITE_WIDTH = 12;
 
 /** Core creature data */
 export interface CreatureCore {
